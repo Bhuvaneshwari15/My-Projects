@@ -1,0 +1,222 @@
+<!-- customer_management.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - Admin Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .customer-management-container {
+            padding: 50px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        #customerList {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        #customerList li {
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-details {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .edit-remove-buttons button {
+            margin-left: 10px;
+        }
+
+        .add-customer-form {
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .back-to-dashboard {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container customer-management-container">
+        <h2>Customer Management</h2>
+
+        <div class="form-group">
+            <label for="searchCustomer">Search Customer:</label>
+            <input type="text" class="form-control" id="searchCustomer" placeholder="Enter customer name or email">
+            <button type="button" class="btn btn-primary" onclick="searchCustomers()">Search</button>
+        </div>
+
+        <ul id="customerList"></ul>
+
+        <form class="add-customer-form">
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" class="form-control" id="customerName" placeholder="Enter customer name" required>
+            </div>
+            <div class="form-group">
+                <label for="customerEmail">Customer Email:</label>
+                <input type="email" class="form-control" id="customerEmail" placeholder="Enter customer email" required>
+            </div>
+            <div class="form-group">
+                <label for="customerPhone">Phone Number:</label>
+                <input type="tel" class="form-control" id="customerPhone" placeholder="Enter phone number" required>
+            </div>
+            <div class="form-group">
+                <label for="customerAddress">Address:</label>
+                <textarea class="form-control" id="customerAddress" placeholder="Enter customer address" required></textarea>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addCustomer()">Add Customer</button>
+        </form>
+
+        <a class="btn btn-dark back-to-dashboard" href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+    </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+        var customers = [
+            { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', address: '123 Main St, City' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '987-654-3210', address: '456 Oak St, Town' },
+            // Add more sample customers as needed
+        ];
+
+        window.onload = function () {
+            displayCustomers();
+        };
+
+        function displayCustomers(searchResults) {
+            var customerList = document.getElementById('customerList');
+            customerList.innerHTML = '';
+
+            var displayData = searchResults || customers;
+
+            displayData.forEach(function (customer) {
+                var listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+                listItem.innerHTML = `
+                    <div class="customer-details">
+                        <strong>Customer ID:</strong> ${customer.id}<br>
+                        <strong>Name:</strong> ${customer.name}<br>
+                        <strong>Email:</strong> ${customer.email}<br>
+                        <strong>Phone:</strong> ${customer.phone}<br>
+                        <strong>Address:</strong> ${customer.address}
+                    </div>
+                    <div class="edit-remove-buttons">
+                        <button class="btn btn-warning btn-sm" onclick="editCustomer(${customer.id}, '${customer.name}', '${customer.email}', '${customer.phone}', '${customer.address}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="removeCustomer(${customer.id})">Remove</button>
+                    </div>`;
+
+                customerList.appendChild(listItem);
+            });
+        }
+
+        function searchCustomers() {
+            var searchValue = document.getElementById('searchCustomer').value.toLowerCase();
+            var searchResults = customers.filter(function (customer) {
+                return (
+                    customer.name.toLowerCase().includes(searchValue) ||
+                    customer.email.toLowerCase().includes(searchValue)
+                );
+            });
+            displayCustomers(searchResults);
+        }
+
+        function addCustomer() {
+            var name = document.getElementById('customerName').value;
+            var email = document.getElementById('customerEmail').value;
+            var phone = document.getElementById('customerPhone').value;
+            var address = document.getElementById('customerAddress').value;
+
+            if (name && email && phone && address) {
+                if (customers.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+                    alert('Customer with the same email already exists.');
+                } else {
+                    var newCustomer = {
+                        id: customers.length + 1,
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        address: address
+                    };
+
+                    customers.push(newCustomer);
+                    displayCustomers();
+
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerEmail').value = '';
+                    document.getElementById('customerPhone').value = '';
+                    document.getElementById('customerAddress').value = '';
+                }
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+
+        function editCustomer(id, name, email, phone, address) {
+            var newName = prompt(`Enter new name for customer ${id}:`, name);
+            var newEmail = prompt(`Enter new email for customer ${id}:`, email);
+            var newPhone = prompt(`Enter new phone number for customer ${id}:`, phone);
+            var newAddress = prompt(`Enter new address for customer ${id}:`, address);
+
+            if (newName !== null && newEmail !== null && newPhone !== null && newAddress !== null) {
+                if (customers.some(c => c.email.toLowerCase() === newEmail.toLowerCase() && c.id !== id)) {
+                    alert('Customer with the same email already exists.');
+                } else {
+                    var customer = customers.find(c => c.id === id);
+                    if (customer) {
+                        customer.name = newName;
+                        customer.email = newEmail;
+                        customer.phone = newPhone;
+                        customer.address = newAddress;
+                        displayCustomers();
+                    }
+                }
+            }
+        }
+
+        function removeCustomer(id) {
+            var confirmRemove = confirm(`Are you sure you want to remove customer ${id}?`);
+            if (confirmRemove) {
+                customers = customers.filter(c => c.id !== id);
+                displayCustomers();
+            }
+        }
+    </script>
+</body>
+</html>
